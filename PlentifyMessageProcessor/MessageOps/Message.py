@@ -1,4 +1,4 @@
-from PlentifyMessageProcessor.PacketOps.Packet import Packet
+from PlentifyMessageProcessor.CoreOps.PacketOps.Packet import Packet
 
 class Message:
         packet = None
@@ -13,8 +13,17 @@ class Message:
         def __init__(self) -> None:
                 pass
 
-        def packMessage(self, packet, type, version, energyUsed, timeDrift, flags, isGeyserWarm, isGeyserDrawingPower):
-                pass
+        def __str__(self) -> str:
+                return "Type = " + str(self.type) + "; Version = " + str(self.version) + "; Energy Used (Wh) = " + str(self.energyUsed) + "; Time Drift (ms) = " + str(self.timeDrift) + "; Geyser Is Warm = " + str(self.isGeyserWarm) + "; Geyser Is Drawing Power = " + str(self.isGeyserDrawingPower) + ";"
+
+        def packMessage(self, type: int, version: int, energyUsed: int, timeDrift: int, flags = None):
+                self.packet = Packet(hexData="0000000000000000000000")
+                self.packet.setData("PACKET_TYPE", type)
+                self.packet.setData("PACKET_VERSION", version)
+                self.packet.setData("ENERGY_USED", energyUsed)
+                self.packet.setData("TIME_DRIFT", timeDrift)
+                self.packet.setData("FLAGS", flags)
+                self.unpackMessage(self.packet.hexData)
 
         def unpackMessage(self, hexData):
                 self.packet = Packet(hexData=hexData)
@@ -23,5 +32,5 @@ class Message:
                 self.energyUsed = self.packet.getData("ENERGY_USED")
                 self.timeDrift = self.packet.getData("TIME_DRIFT")
                 self.flags = self.packet.getData("FLAGS")
-                self.isGeyserWarm = self.flags & 1
-                self.isGeyserDrawingPower = self.flags & 2
+                self.isGeyserWarm = (self.flags & 1) == 1
+                self.isGeyserDrawingPower = (self.flags >> 1 & 1) == 1

@@ -1,5 +1,7 @@
-import PlentifyMessageProcessor.PacketOps.Constants as constants
-from PlentifyMessageProcessor.ErrorHandling.Exceptions import BadDataError, BadPacketError
+import struct
+
+import PlentifyMessageProcessor.CoreOps.PacketOps.Constants as constants
+from PlentifyMessageProcessor.CoreOps.ErrorHandling.Exceptions import BadDataError, BadPacketError
 
 class Packet:
         hexData = None
@@ -19,7 +21,7 @@ class Packet:
                 if self.isValid:
                         if dataType in constants.HEX_POSITIONS.keys():
                                 hexRequestedPacketData = self.hexData[constants.HEX_POSITIONS[dataType][0]:constants.HEX_POSITIONS[dataType][1]+1]
-                                requestedData = int.from_bytes(bytes.fromhex(hexRequestedPacketData), byteorder=self.byteorder)
+                                requestedData = struct.unpack(self.byteorder + constants.HEX_POSITIONS[dataType][2], bytes.fromhex(hexRequestedPacketData))[0]
                                 return requestedData
                         raise BadDataError(message="The requested data type was not found in the packet")
                 raise BadPacketError
@@ -27,12 +29,7 @@ class Packet:
         def setData(self, dataType=None, data=None):
                 if self.isValid:
                         if dataType in constants.HEX_POSITIONS.keys() and data:
-                                self.hexData = self.hexData[0:max(0, constants.HEX_POSITIONS[dataType][0])] + data + self.hexData[constants.HEX_POSITIONS[dataType][1]+1:]
+                                self.hexData = self.hexData[0:max(0, constants.HEX_POSITIONS[dataType][0])] + struct.pack(self.byteorder + constants.HEX_POSITIONS[dataType][2], data).hex() + self.hexData[constants.HEX_POSITIONS[dataType][1]+1:]
                                 return self.hexData
                         raise BadDataError(message="The supplied data type cannot be encoded in the packet, or the data is invalid")
                 raise BadPacketError
-
-if __name__ == "__main__":
-        p = Packet("0100c8110000d307000002")
-        print(p.validatePacket())
-        print(p.getData("PACKET_TYPE"), p.getData("PACKET_VERSION"), p.getData("ENERGY_USED"), p.getData("TIME_DRIFT"), p.getData("FLAGS"))

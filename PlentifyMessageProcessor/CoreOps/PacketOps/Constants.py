@@ -1,0 +1,5 @@
+BYTE_ORDER = "<"
+
+HEX_POSITIONS = {"PACKET_TYPE": (0, 1, "B"), "PACKET_VERSION": (2, 3, "B"), "ENERGY_USED": (4, 11, "I"), "TIME_DRIFT": (12, 19, "i"), "FLAGS": (20, 21, "B")}
+FLAG_POS = {"GEYSER_WARM": 0, "GEYSER_POWER": 1}
+
